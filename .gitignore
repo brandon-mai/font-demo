@@ -1,4 +1,4 @@
 .conda
 __pycache__
 .idea
-checkpoints/*
+

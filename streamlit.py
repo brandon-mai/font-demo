@@ -4,6 +4,7 @@ import torch
 import numpy as np
 from PIL import Image
 import io
+import easyocr
 from predict_font import predict_font
 from font_list import FONT_LIST, MYFONT_RENDER
 
@@ -63,8 +64,13 @@ def load_models():
     
     return models
 
+@st.cache_resource
+def load_ocr_reader():
+    return easyocr.Reader(['vi','en'], gpu=False)
+
 # Load models
 models = load_models()
+reader = load_ocr_reader()
 
 with st.sidebar:
     option = st.selectbox(
@@ -84,6 +90,7 @@ with st.sidebar:
         cropped_pic = st_cropperjs(pic=pic, btn_text="✂️ Crop Image", key="cropper")
         if cropped_pic:
             st.session_state['cropped_image'] = cropped_pic
+            st.session_state['preview_text'] = reader.readtext(cropped_pic, detail = 0, paragraph=True)[0]
 
 st.title("Font Recognition")
 
@@ -152,7 +159,7 @@ with pred_col:
                     # Sort by probability (descending)
                     font_predictions.sort(key=lambda x: x[-1], reverse=True)
 
-                    preview_text = "Bogos binted"
+                    preview_text = st.session_state.get('preview_text', 'Boat goes binted')
                     
                     # Display top 5 predictions
                     for i, (font_name, font_id, prob) in enumerate(font_predictions[:10]):
