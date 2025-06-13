@@ -3,6 +3,7 @@ from streamlit_cropperjs import st_cropperjs
 import torch
 import numpy as np
 from PIL import Image
+import os
 import io
 import easyocr
 from predict_font import predict_font
@@ -13,13 +14,14 @@ from nets.henet import HENet
 from nets.fontclassifier import FontClassifier
 from nets.scae import SCAE
 
-
 st.set_page_config(
    page_title="Font Recognition",
    page_icon=":sparkles:",
    layout="wide",
    initial_sidebar_state="expanded",
 )
+
+torch.classes.__path__ = [os.path.join(torch.__path__[0], torch.classes.__file__)] 
 
 # Initialize session state for models
 @st.cache_resource
@@ -90,7 +92,10 @@ with st.sidebar:
         cropped_pic = st_cropperjs(pic=pic, btn_text="✂️ Crop Image", key="cropper")
         if cropped_pic:
             st.session_state['cropped_image'] = cropped_pic
-            st.session_state['preview_text'] = reader.readtext(cropped_pic, detail = 0, paragraph=True)[0]
+            try:
+                st.session_state['preview_text'] = reader.readtext(cropped_pic, detail = 0, paragraph=True)[0]
+            except Exception as e:
+                st.session_state['preview_text'] = "Preview Text"
 
 st.title("Font Recognition")
 
